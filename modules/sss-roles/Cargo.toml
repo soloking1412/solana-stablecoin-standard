@@ -1,0 +1,11 @@
+[package]
+name = "sss-roles"
+version = "0.1.0"
+description = "Role-based access control module for Solana Stablecoin Standard"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+borsh = "0.10"
+
+[dev-dependencies]

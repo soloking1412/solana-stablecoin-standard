@@ -1,0 +1,9 @@
+[package]
+name = "sss-oracle"
+version = "0.1.0"
+description = "Oracle price feed integration for Solana Stablecoin Standard"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+borsh = "0.10"

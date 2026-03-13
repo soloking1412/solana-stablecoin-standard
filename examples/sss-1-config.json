@@ -1,0 +1,7 @@
+{
+  "name": "My USD",
+  "symbol": "MUSD",
+  "decimals": 6,
+  "preset": 1,
+  "uri": "https://example.com/musd-metadata.json"
+}

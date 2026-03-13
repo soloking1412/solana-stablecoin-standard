@@ -1,0 +1,29 @@
+[package]
+name = "sss-token"
+version = "0.1.0"
+description = "Solana Stablecoin Standard — core token program"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "sss_token"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = [
+    "anchor-lang/idl-build",
+    "anchor-spl/idl-build",
+]
+
+[dependencies]
+anchor-lang = { workspace = true }
+anchor-spl = { workspace = true }
+spl-token-2022 = { workspace = true }
+spl-token-metadata-interface = { workspace = true }
+spl-transfer-hook-interface = { workspace = true }
+spl-tlv-account-resolution = { workspace = true }

@@ -1,0 +1,129 @@
+name: Deploy Programs
+
+on:
+  workflow_dispatch:
+    inputs:
+      network:
+        description: "Target network"
+        required: true
+        type: choice
+        options:
+          - devnet
+          - mainnet-beta
+      program:
+        description: "Program to deploy"
+        required: true
+        type: choice
+        options:
+          - all
+          - sss-token
+          - sss-transfer-hook
+      confirm:
+        description: "Type 'deploy' to confirm"
+        required: true
+        type: string
+
+env:
+  SOLANA_VERSION: "1.18.26"
+  ANCHOR_VERSION: "0.31.1"
+  RUST_TOOLCHAIN: "1.79.0"
+  NODE_VERSION: "20"
+
+jobs:
+  validate:
+    name: Validate Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm deployment
+        if: ${{ github.event.inputs.confirm != 'deploy' }}
+        run: |
+          echo "❌ Deployment not confirmed. Type 'deploy' to confirm."
+          exit 1
+
+      - name: Mainnet branch check
+        if: ${{ github.event.inputs.network == 'mainnet-beta' && github.ref != 'refs/heads/main' }}
+        run: |
+          echo "❌ Mainnet deployments must be from the main branch."
+          exit 1
+
+  deploy:
+    name: Deploy to ${{ github.event.inputs.network }}
+    runs-on: ubuntu-latest
+    needs: validate
+    environment: ${{ github.event.inputs.network }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-deploy-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-deploy-
+
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v${{ env.SOLANA_VERSION }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Install Anchor CLI
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor --tag v${{ env.ANCHOR_VERSION }} anchor-cli --locked --force
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+
+      - name: Install JS dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Configure Solana CLI
+        run: |
+          solana config set --url ${{ github.event.inputs.network }}
+          echo "${{ secrets.DEPLOYER_KEYPAIR }}" > /tmp/deployer.json
+          solana config set --keypair /tmp/deployer.json
+
+      - name: Check deployer balance
+        run: |
+          BALANCE=$(solana balance | awk '{print $1}')
+          echo "Deployer balance: $BALANCE SOL"
+          if (( $(echo "$BALANCE < 5" | bc -l) )); then
+            echo "⚠️  Low balance warning: $BALANCE SOL"
+          fi
+
+      - name: Build programs
+        run: anchor build
+
+      - name: Deploy sss-token
+        if: ${{ github.event.inputs.program == 'all' || github.event.inputs.program == 'sss-token' }}
+        run: |
+          echo "🚀 Deploying sss-token to ${{ github.event.inputs.network }}..."
+          anchor deploy --program-name sss_token --provider.cluster ${{ github.event.inputs.network }}
+
+      - name: Deploy sss-transfer-hook
+        if: ${{ github.event.inputs.program == 'all' || github.event.inputs.program == 'sss-transfer-hook' }}
+        run: |
+          echo "🚀 Deploying sss-transfer-hook to ${{ github.event.inputs.network }}..."
+          anchor deploy --program-name sss_transfer_hook --provider.cluster ${{ github.event.inputs.network }}
+
+      - name: Verify deployment
+        run: |
+          echo "✅ Deployment complete. Verifying programs..."
+          solana program show StbMVdQRUykc9jS3bT1LCiHBqBos1awkVHFn2cFRLwR || true
+          solana program show SThk8WNt3JUYTCNwUgMJeLSBbqRbGnFv6xFM4th7giQ || true
+
+      - name: Cleanup secrets
+        if: always()
+        run: rm -f /tmp/deployer.json

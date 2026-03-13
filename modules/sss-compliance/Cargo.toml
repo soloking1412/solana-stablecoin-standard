@@ -1,0 +1,9 @@
+[package]
+name = "sss-compliance"
+version = "0.1.0"
+description = "Compliance and audit trail module for Solana Stablecoin Standard"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+borsh = "0.10"

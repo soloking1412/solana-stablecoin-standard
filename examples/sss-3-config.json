@@ -1,0 +1,12 @@
+{
+  "name": "Private USD",
+  "symbol": "PUSD",
+  "decimals": 6,
+  "preset": 3,
+  "uri": "https://example.com/pusd-metadata.json",
+  "extensions": {
+    "permanentDelegate": true,
+    "transferHook": true,
+    "defaultAccountFrozen": true
+  }
+}

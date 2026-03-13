@@ -1,0 +1,10 @@
+name = "Regulated USD"
+symbol = "RUSD"
+decimals = 6
+preset = 2
+uri = "https://example.com/rusd-metadata.json"
+
+[extensions]
+permanentDelegate = true
+transferHook = true
+defaultAccountFrozen = true
