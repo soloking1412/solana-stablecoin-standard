@@ -24,9 +24,9 @@ on:
         type: string
 
 env:
-  SOLANA_VERSION: "2.0.12"
+  SOLANA_VERSION: "1.18.26"
   ANCHOR_VERSION: "0.31.1"
-  RUST_TOOLCHAIN: "1.85.0"
+  RUST_TOOLCHAIN: "1.89.0"
   NODE_VERSION: "20"
 
 jobs:
