@@ -1,3 +1,5 @@
+#![allow(unexpected_cfgs, ambiguous_glob_reexports, deprecated)]
+
 use anchor_lang::prelude::*;
 
 pub mod error;
@@ -12,9 +14,7 @@ declare_id!("SThk8WNt3JUYTCNwUgMJeLSBbqRbGnFv6xFM4th7giQ");
 pub mod sss_transfer_hook {
     use super::*;
 
-    pub fn initialize_extra_account_metas(
-        ctx: Context<InitializeExtraAccountMetas>,
-    ) -> Result<()> {
+    pub fn initialize_extra_account_metas(ctx: Context<InitializeExtraAccountMetas>) -> Result<()> {
         instructions::initialize_extra_account_metas::handler(ctx)
     }
 
@@ -30,7 +30,8 @@ pub mod sss_transfer_hook {
         accounts: &'info [AccountInfo<'info>],
         data: &[u8],
     ) -> Result<()> {
-        let instruction = spl_transfer_hook_interface::instruction::TransferHookInstruction::unpack(data)?;
+        let instruction =
+            spl_transfer_hook_interface::instruction::TransferHookInstruction::unpack(data)?;
 
         match instruction {
             spl_transfer_hook_interface::instruction::TransferHookInstruction::Execute { amount } => {

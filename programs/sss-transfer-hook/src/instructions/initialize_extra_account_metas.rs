@@ -2,9 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::system_program;
 use anchor_spl::token_interface::Mint;
 use spl_tlv_account_resolution::{
-    account::ExtraAccountMeta,
-    seeds::Seed,
-    state::ExtraAccountMetaList,
+    account::ExtraAccountMeta, seeds::Seed, state::ExtraAccountMetaList,
 };
 use spl_transfer_hook_interface::instruction::ExecuteInstruction;
 
@@ -37,18 +35,16 @@ pub struct InitializeExtraAccountMetas<'info> {
 pub fn handler(ctx: Context<InitializeExtraAccountMetas>) -> Result<()> {
     let extra_metas = vec![
         // [0] stablecoin config PDA — passed as-is to the execute hook
-        ExtraAccountMeta::new_with_pubkey(
-            &ctx.accounts.stablecoin_config.key(),
-            false,
-            false,
-        )?,
+        ExtraAccountMeta::new_with_pubkey(&ctx.accounts.stablecoin_config.key(), false, false)?,
         // [1] source blacklist PDA — derived from [BLACKLIST_SEED, config, source_owner]
         // We use external PDA resolution:  the source owner is at index 2 in the
         // transfer instruction accounts (owner of source token account).
         ExtraAccountMeta::new_external_pda_with_seeds(
             0, // stablecoin_program index in extra metas... we'll use literal pubkey
             &[
-                Seed::Literal { bytes: BLACKLIST_SEED.to_vec() },
+                Seed::Literal {
+                    bytes: BLACKLIST_SEED.to_vec(),
+                },
                 Seed::AccountKey { index: 0 }, // stablecoin_config (extra meta 0)
                 Seed::AccountKey { index: 3 }, // source token account owner
             ],
@@ -59,7 +55,9 @@ pub fn handler(ctx: Context<InitializeExtraAccountMetas>) -> Result<()> {
         ExtraAccountMeta::new_external_pda_with_seeds(
             0,
             &[
-                Seed::Literal { bytes: BLACKLIST_SEED.to_vec() },
+                Seed::Literal {
+                    bytes: BLACKLIST_SEED.to_vec(),
+                },
                 Seed::AccountKey { index: 0 }, // stablecoin_config
                 Seed::AccountKey { index: 4 }, // destination token account owner
             ],
@@ -96,4 +94,3 @@ pub fn handler(ctx: Context<InitializeExtraAccountMetas>) -> Result<()> {
 
     Ok(())
 }
-

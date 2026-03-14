@@ -1,10 +1,13 @@
+use crate::app::App;
 use ratatui::prelude::*;
 use ratatui::widgets::*;
-use crate::app::App;
 
 pub fn render(frame: &mut Frame, app: &App, area: Rect) {
-    let header = Row::new(vec!["Address", "Balance", "Status"])
-        .style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD));
+    let header = Row::new(vec!["Address", "Balance", "Status"]).style(
+        Style::default()
+            .fg(Color::Yellow)
+            .add_modifier(Modifier::BOLD),
+    );
 
     let rows: Vec<Row> = app
         .holders
@@ -21,7 +24,11 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
 
             Row::new(vec![
                 Cell::from(if h.address.len() > 20 {
-                    format!("{}...{}", &h.address[..8], &h.address[h.address.len()-8..])
+                    format!(
+                        "{}...{}",
+                        &h.address[..8],
+                        &h.address[h.address.len() - 8..]
+                    )
                 } else {
                     h.address.clone()
                 }),

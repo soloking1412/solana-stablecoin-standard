@@ -1,8 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::{
-    Mint, TokenAccount, TokenInterface,
-    mint_to, MintTo,
-};
+use anchor_spl::token_interface::{mint_to, Mint, MintTo, TokenAccount, TokenInterface};
 
 use crate::constants::*;
 use crate::error::StablecoinError;
@@ -54,23 +51,21 @@ pub fn handler(ctx: Context<MintTokens>, amount: u64) -> Result<()> {
     require!(amount > 0, StablecoinError::ZeroAmount);
 
     let quota = &mut ctx.accounts.minter_quota;
-    let new_minted = quota.minted
+    let new_minted = quota
+        .minted
         .checked_add(amount)
         .ok_or(StablecoinError::Overflow)?;
     require!(new_minted <= quota.quota, StablecoinError::QuotaExceeded);
     quota.minted = new_minted;
 
     let config = &mut ctx.accounts.config;
-    config.total_minted = config.total_minted
+    config.total_minted = config
+        .total_minted
         .checked_add(amount)
         .ok_or(StablecoinError::Overflow)?;
 
     let mint_key = ctx.accounts.mint.key();
-    let seeds = &[
-        STABLECOIN_SEED,
-        mint_key.as_ref(),
-        &[config.bump],
-    ];
+    let seeds = &[STABLECOIN_SEED, mint_key.as_ref(), &[config.bump]];
     let signer_seeds = &[&seeds[..]];
 
     mint_to(

@@ -1,6 +1,6 @@
+use crate::app::App;
 use ratatui::prelude::*;
 use ratatui::widgets::*;
-use crate::app::App;
 
 pub fn render(frame: &mut Frame, app: &App, area: Rect) {
     let chunks = Layout::default()
@@ -9,13 +9,15 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
         .split(area);
 
     // Compliance status
-    let is_compliant = app.token_info.as_ref().map_or(false, |t| t.preset >= 2);
+    let is_compliant = app.token_info.as_ref().is_some_and(|t| t.preset >= 2);
     let status_text = if is_compliant {
         vec![
             Line::from(""),
             Line::from(Span::styled(
                 "  Compliance Mode: SSS-2 (Full)",
-                Style::default().fg(Color::Green).add_modifier(Modifier::BOLD),
+                Style::default()
+                    .fg(Color::Green)
+                    .add_modifier(Modifier::BOLD),
             )),
             Line::from(format!("  Blacklisted Addresses: {}", app.blacklist.len())),
         ]
@@ -30,13 +32,19 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
         ]
     };
 
-    let status = Paragraph::new(status_text)
-        .block(Block::default().borders(Borders::ALL).title(" Compliance Status "));
+    let status = Paragraph::new(status_text).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title(" Compliance Status "),
+    );
     frame.render_widget(status, chunks[0]);
 
     // Blacklist table
-    let header = Row::new(vec!["Address", "Reason", "Added By", "Date"])
-        .style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD));
+    let header = Row::new(vec!["Address", "Reason", "Added By", "Date"]).style(
+        Style::default()
+            .fg(Color::Yellow)
+            .add_modifier(Modifier::BOLD),
+    );
 
     let rows: Vec<Row> = app
         .blacklist
@@ -45,7 +53,11 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
         .map(|b| {
             Row::new(vec![
                 Cell::from(if b.address.len() > 16 {
-                    format!("{}...{}", &b.address[..6], &b.address[b.address.len()-6..])
+                    format!(
+                        "{}...{}",
+                        &b.address[..6],
+                        &b.address[b.address.len() - 6..]
+                    )
                 } else {
                     b.address.clone()
                 }),

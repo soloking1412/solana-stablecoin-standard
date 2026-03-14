@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
-    Mint, TokenAccount, TokenInterface,
-    thaw_account as spl_thaw, ThawAccount,
+    thaw_account as spl_thaw, Mint, ThawAccount, TokenAccount, TokenInterface,
 };
 
 use crate::constants::*;
@@ -50,17 +49,15 @@ pub fn handler(ctx: Context<ThawTokenAccount>) -> Result<()> {
     ];
     let signer_seeds = &[&seeds[..]];
 
-    spl_thaw(
-        CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
-            ThawAccount {
-                account: ctx.accounts.token_account.to_account_info(),
-                mint: ctx.accounts.mint.to_account_info(),
-                authority: ctx.accounts.config.to_account_info(),
-            },
-            signer_seeds,
-        ),
-    )?;
+    spl_thaw(CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        ThawAccount {
+            account: ctx.accounts.token_account.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+            authority: ctx.accounts.config.to_account_info(),
+        },
+        signer_seeds,
+    ))?;
 
     let clock = Clock::get()?;
     emit!(AccountThawed {

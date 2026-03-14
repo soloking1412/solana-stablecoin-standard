@@ -148,18 +148,42 @@ mod tests {
 
     #[test]
     fn basic_allows_mint_burn_pause() {
-        assert!(is_compliant_action(&ComplianceLevel::Basic, &AuditAction::Mint));
-        assert!(is_compliant_action(&ComplianceLevel::Basic, &AuditAction::Burn));
-        assert!(is_compliant_action(&ComplianceLevel::Basic, &AuditAction::Pause));
-        assert!(is_compliant_action(&ComplianceLevel::Basic, &AuditAction::Unpause));
+        assert!(is_compliant_action(
+            &ComplianceLevel::Basic,
+            &AuditAction::Mint
+        ));
+        assert!(is_compliant_action(
+            &ComplianceLevel::Basic,
+            &AuditAction::Burn
+        ));
+        assert!(is_compliant_action(
+            &ComplianceLevel::Basic,
+            &AuditAction::Pause
+        ));
+        assert!(is_compliant_action(
+            &ComplianceLevel::Basic,
+            &AuditAction::Unpause
+        ));
     }
 
     #[test]
     fn basic_blocks_freeze_and_seize() {
-        assert!(!is_compliant_action(&ComplianceLevel::Basic, &AuditAction::Freeze));
-        assert!(!is_compliant_action(&ComplianceLevel::Basic, &AuditAction::Thaw));
-        assert!(!is_compliant_action(&ComplianceLevel::Basic, &AuditAction::BlacklistAdd));
-        assert!(!is_compliant_action(&ComplianceLevel::Basic, &AuditAction::Seize));
+        assert!(!is_compliant_action(
+            &ComplianceLevel::Basic,
+            &AuditAction::Freeze
+        ));
+        assert!(!is_compliant_action(
+            &ComplianceLevel::Basic,
+            &AuditAction::Thaw
+        ));
+        assert!(!is_compliant_action(
+            &ComplianceLevel::Basic,
+            &AuditAction::BlacklistAdd
+        ));
+        assert!(!is_compliant_action(
+            &ComplianceLevel::Basic,
+            &AuditAction::Seize
+        ));
     }
 
     #[test]
@@ -190,16 +214,34 @@ mod tests {
 
     #[test]
     fn private_allows_everything() {
-        assert!(is_compliant_action(&ComplianceLevel::Private, &AuditAction::Seize));
-        assert!(is_compliant_action(&ComplianceLevel::Private, &AuditAction::Freeze));
-        assert!(is_compliant_action(&ComplianceLevel::Private, &AuditAction::Mint));
+        assert!(is_compliant_action(
+            &ComplianceLevel::Private,
+            &AuditAction::Seize
+        ));
+        assert!(is_compliant_action(
+            &ComplianceLevel::Private,
+            &AuditAction::Freeze
+        ));
+        assert!(is_compliant_action(
+            &ComplianceLevel::Private,
+            &AuditAction::Mint
+        ));
     }
 
     #[test]
     fn basic_allows_role_management() {
-        assert!(is_compliant_action(&ComplianceLevel::Basic, &AuditAction::RoleGranted));
-        assert!(is_compliant_action(&ComplianceLevel::Basic, &AuditAction::RoleRevoked));
-        assert!(is_compliant_action(&ComplianceLevel::Basic, &AuditAction::AuthorityTransferred));
+        assert!(is_compliant_action(
+            &ComplianceLevel::Basic,
+            &AuditAction::RoleGranted
+        ));
+        assert!(is_compliant_action(
+            &ComplianceLevel::Basic,
+            &AuditAction::RoleRevoked
+        ));
+        assert!(is_compliant_action(
+            &ComplianceLevel::Basic,
+            &AuditAction::AuthorityTransferred
+        ));
     }
 
     // --- blacklist check ---
@@ -302,7 +344,13 @@ mod tests {
 
     #[test]
     fn sanctions_screening_values() {
-        assert_ne!(SanctionsScreeningResult::Clear, SanctionsScreeningResult::Match);
-        assert_ne!(SanctionsScreeningResult::Match, SanctionsScreeningResult::PendingReview);
+        assert_ne!(
+            SanctionsScreeningResult::Clear,
+            SanctionsScreeningResult::Match
+        );
+        assert_ne!(
+            SanctionsScreeningResult::Match,
+            SanctionsScreeningResult::PendingReview
+        );
     }
 }

@@ -1,6 +1,6 @@
+use crate::app::App;
 use ratatui::prelude::*;
 use ratatui::widgets::*;
-use crate::app::App;
 
 pub fn render(frame: &mut Frame, app: &App, area: Rect) {
     let chunks = Layout::default()
@@ -46,8 +46,8 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
         vec![Line::from("Loading...")]
     };
 
-    let supply_block = Paragraph::new(supply_text)
-        .block(Block::default().borders(Borders::ALL).title(" Supply "));
+    let supply_block =
+        Paragraph::new(supply_text).block(Block::default().borders(Borders::ALL).title(" Supply "));
     frame.render_widget(supply_block, left[1]);
 
     // Recent events
@@ -55,12 +55,13 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
         .recent_events
         .iter()
         .take(15)
-        .map(|e| {
-            ListItem::new(format!("[{}] {} - {}", e.timestamp, e.event_type, e.actor))
-        })
+        .map(|e| ListItem::new(format!("[{}] {} - {}", e.timestamp, e.event_type, e.actor)))
         .collect();
 
-    let events_list = List::new(event_items)
-        .block(Block::default().borders(Borders::ALL).title(" Recent Activity "));
+    let events_list = List::new(event_items).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title(" Recent Activity "),
+    );
     frame.render_widget(events_list, chunks[1]);
 }

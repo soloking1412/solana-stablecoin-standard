@@ -70,64 +70,106 @@ mod tests {
 
     #[test]
     fn admin_can_manage_roles() {
-        assert!(role_has_permission(&RoleType::Admin, &Permission::ManageRoles));
+        assert!(role_has_permission(
+            &RoleType::Admin,
+            &Permission::ManageRoles
+        ));
     }
 
     #[test]
     fn admin_can_transfer_authority() {
-        assert!(role_has_permission(&RoleType::Admin, &Permission::TransferAuthority));
+        assert!(role_has_permission(
+            &RoleType::Admin,
+            &Permission::TransferAuthority
+        ));
     }
 
     #[test]
     fn admin_cannot_mint() {
-        assert!(!role_has_permission(&RoleType::Admin, &Permission::MintTokens));
+        assert!(!role_has_permission(
+            &RoleType::Admin,
+            &Permission::MintTokens
+        ));
     }
 
     #[test]
     fn minter_can_mint() {
-        assert!(role_has_permission(&RoleType::Minter, &Permission::MintTokens));
+        assert!(role_has_permission(
+            &RoleType::Minter,
+            &Permission::MintTokens
+        ));
     }
 
     #[test]
     fn minter_cannot_burn() {
-        assert!(!role_has_permission(&RoleType::Minter, &Permission::BurnTokens));
+        assert!(!role_has_permission(
+            &RoleType::Minter,
+            &Permission::BurnTokens
+        ));
     }
 
     #[test]
     fn burner_can_burn() {
-        assert!(role_has_permission(&RoleType::Burner, &Permission::BurnTokens));
+        assert!(role_has_permission(
+            &RoleType::Burner,
+            &Permission::BurnTokens
+        ));
     }
 
     #[test]
     fn freezer_can_freeze_and_thaw() {
-        assert!(role_has_permission(&RoleType::Freezer, &Permission::FreezeAccount));
-        assert!(role_has_permission(&RoleType::Freezer, &Permission::ThawAccount));
+        assert!(role_has_permission(
+            &RoleType::Freezer,
+            &Permission::FreezeAccount
+        ));
+        assert!(role_has_permission(
+            &RoleType::Freezer,
+            &Permission::ThawAccount
+        ));
     }
 
     #[test]
     fn freezer_cannot_pause() {
-        assert!(!role_has_permission(&RoleType::Freezer, &Permission::PauseToken));
+        assert!(!role_has_permission(
+            &RoleType::Freezer,
+            &Permission::PauseToken
+        ));
     }
 
     #[test]
     fn pauser_can_pause_and_unpause() {
-        assert!(role_has_permission(&RoleType::Pauser, &Permission::PauseToken));
-        assert!(role_has_permission(&RoleType::Pauser, &Permission::UnpauseToken));
+        assert!(role_has_permission(
+            &RoleType::Pauser,
+            &Permission::PauseToken
+        ));
+        assert!(role_has_permission(
+            &RoleType::Pauser,
+            &Permission::UnpauseToken
+        ));
     }
 
     #[test]
     fn blacklister_can_manage_blacklist() {
-        assert!(role_has_permission(&RoleType::Blacklister, &Permission::ManageBlacklist));
+        assert!(role_has_permission(
+            &RoleType::Blacklister,
+            &Permission::ManageBlacklist
+        ));
     }
 
     #[test]
     fn blacklister_cannot_seize() {
-        assert!(!role_has_permission(&RoleType::Blacklister, &Permission::SeizeTokens));
+        assert!(!role_has_permission(
+            &RoleType::Blacklister,
+            &Permission::SeizeTokens
+        ));
     }
 
     #[test]
     fn seizer_can_seize() {
-        assert!(role_has_permission(&RoleType::Seizer, &Permission::SeizeTokens));
+        assert!(role_has_permission(
+            &RoleType::Seizer,
+            &Permission::SeizeTokens
+        ));
     }
 
     #[test]
@@ -147,16 +189,31 @@ mod tests {
 
     #[test]
     fn admin_can_assign_any_role() {
-        assert!(validate_role_assignment(&RoleType::Admin, &RoleType::Minter));
-        assert!(validate_role_assignment(&RoleType::Admin, &RoleType::Seizer));
+        assert!(validate_role_assignment(
+            &RoleType::Admin,
+            &RoleType::Minter
+        ));
+        assert!(validate_role_assignment(
+            &RoleType::Admin,
+            &RoleType::Seizer
+        ));
         assert!(validate_role_assignment(&RoleType::Admin, &RoleType::Admin));
     }
 
     #[test]
     fn non_admin_cannot_assign_roles() {
-        assert!(!validate_role_assignment(&RoleType::Minter, &RoleType::Burner));
-        assert!(!validate_role_assignment(&RoleType::Seizer, &RoleType::Minter));
-        assert!(!validate_role_assignment(&RoleType::Pauser, &RoleType::Admin));
+        assert!(!validate_role_assignment(
+            &RoleType::Minter,
+            &RoleType::Burner
+        ));
+        assert!(!validate_role_assignment(
+            &RoleType::Seizer,
+            &RoleType::Minter
+        ));
+        assert!(!validate_role_assignment(
+            &RoleType::Pauser,
+            &RoleType::Admin
+        ));
     }
 
     #[test]

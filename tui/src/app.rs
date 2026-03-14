@@ -1,5 +1,3 @@
-use solana_sdk::pubkey::Pubkey;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Tab {
     Dashboard,
@@ -21,7 +19,13 @@ impl Tab {
     }
 
     pub fn all() -> &'static [Tab] {
-        &[Tab::Dashboard, Tab::Supply, Tab::Holders, Tab::Events, Tab::Compliance]
+        &[
+            Tab::Dashboard,
+            Tab::Supply,
+            Tab::Holders,
+            Tab::Events,
+            Tab::Compliance,
+        ]
     }
 }
 
@@ -70,7 +74,9 @@ pub struct App {
     pub tick_count: u64,
     pub should_quit: bool,
     pub scroll_offset: usize,
+    #[allow(dead_code)]
     pub rpc_url: String,
+    #[allow(dead_code)]
     pub mint_address: String,
 }
 
@@ -97,15 +103,25 @@ impl App {
 
     pub fn next_tab(&mut self) {
         let tabs = Tab::all();
-        let idx = tabs.iter().position(|t| *t == self.current_tab).unwrap_or(0);
+        let idx = tabs
+            .iter()
+            .position(|t| *t == self.current_tab)
+            .unwrap_or(0);
         self.current_tab = tabs[(idx + 1) % tabs.len()];
         self.scroll_offset = 0;
     }
 
     pub fn prev_tab(&mut self) {
         let tabs = Tab::all();
-        let idx = tabs.iter().position(|t| *t == self.current_tab).unwrap_or(0);
-        self.current_tab = if idx == 0 { tabs[tabs.len() - 1] } else { tabs[idx - 1] };
+        let idx = tabs
+            .iter()
+            .position(|t| *t == self.current_tab)
+            .unwrap_or(0);
+        self.current_tab = if idx == 0 {
+            tabs[tabs.len() - 1]
+        } else {
+            tabs[idx - 1]
+        };
         self.scroll_offset = 0;
     }
 
@@ -118,8 +134,8 @@ impl App {
     }
 
     pub fn circulating_supply(&self) -> u64 {
-        self.token_info.as_ref().map_or(0, |t| {
-            t.total_minted.saturating_sub(t.total_burned)
-        })
+        self.token_info
+            .as_ref()
+            .map_or(0, |t| t.total_minted.saturating_sub(t.total_burned))
     }
 }

@@ -1,8 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::{
-    Mint, TokenAccount, TokenInterface,
-    burn, Burn,
-};
+use anchor_spl::token_interface::{burn, Burn, Mint, TokenAccount, TokenInterface};
 
 use crate::constants::*;
 use crate::error::StablecoinError;
@@ -49,7 +46,8 @@ pub fn handler(ctx: Context<BurnTokens>, amount: u64) -> Result<()> {
     require!(amount > 0, StablecoinError::ZeroAmount);
 
     let config = &mut ctx.accounts.config;
-    config.total_burned = config.total_burned
+    config.total_burned = config
+        .total_burned
         .checked_add(amount)
         .ok_or(StablecoinError::Overflow)?;
 

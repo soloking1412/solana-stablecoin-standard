@@ -40,7 +40,10 @@ pub struct BlacklistAdd<'info> {
 }
 
 pub fn handler(ctx: Context<BlacklistAdd>, reason: String) -> Result<()> {
-    require!(reason.len() <= MAX_REASON_LEN, StablecoinError::ReasonTooLong);
+    require!(
+        reason.len() <= MAX_REASON_LEN,
+        StablecoinError::ReasonTooLong
+    );
 
     let clock = Clock::get()?;
     let entry = &mut ctx.accounts.blacklist_entry;

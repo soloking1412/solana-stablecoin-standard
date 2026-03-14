@@ -1,12 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::program::invoke;
-use anchor_spl::token_2022;
 use anchor_spl::token_interface::{Mint, TokenInterface};
-use spl_token_2022::{
-    extension::ExtensionType,
-    instruction as token_instruction,
-    state::Mint as SplMint,
-};
 
 use crate::constants::*;
 use crate::error::StablecoinError;
@@ -57,11 +50,19 @@ pub struct Initialize<'info> {
 }
 
 pub fn handler(ctx: Context<Initialize>, params: InitializeParams) -> Result<()> {
-    require!(params.name.len() <= MAX_NAME_LEN, StablecoinError::NameTooLong);
-    require!(params.symbol.len() <= MAX_SYMBOL_LEN, StablecoinError::SymbolTooLong);
+    require!(
+        params.name.len() <= MAX_NAME_LEN,
+        StablecoinError::NameTooLong
+    );
+    require!(
+        params.symbol.len() <= MAX_SYMBOL_LEN,
+        StablecoinError::SymbolTooLong
+    );
     require!(params.uri.len() <= MAX_URI_LEN, StablecoinError::UriTooLong);
     require!(
-        params.preset == PRESET_SSS1 || params.preset == PRESET_SSS2 || params.preset == PRESET_SSS3,
+        params.preset == PRESET_SSS1
+            || params.preset == PRESET_SSS2
+            || params.preset == PRESET_SSS3,
         StablecoinError::InvalidPreset
     );
 

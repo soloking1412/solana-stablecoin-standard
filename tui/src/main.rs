@@ -3,8 +3,6 @@ mod input;
 mod rpc;
 mod ui;
 
-use std::io;
-use std::time::Duration;
 use anyhow::Result;
 use clap::Parser;
 use crossterm::{
@@ -13,6 +11,8 @@ use crossterm::{
     ExecutableCommand,
 };
 use ratatui::prelude::*;
+use std::io;
+use std::time::Duration;
 
 use app::App;
 
@@ -64,10 +64,9 @@ async fn main() -> Result<()> {
     if let Ok(holders) = rpc::fetch_holders(&client, &args.mint) {
         app.holders = holders;
     }
-    if let Ok(events) = rpc::fetch_recent_events(
-        &client,
-        "StbMVdQRUykc9jS3bT1LCiHBqBos1awkVHFn2cFRLwR",
-    ) {
+    if let Ok(events) =
+        rpc::fetch_recent_events(&client, "StbMVdQRUykc9jS3bT1LCiHBqBos1awkVHFn2cFRLwR")
+    {
         app.recent_events = events;
     }
 

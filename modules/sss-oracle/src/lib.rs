@@ -101,7 +101,9 @@ pub fn calculate_mint_amount(
 
     let exp_abs = feed.exponent.unsigned_abs();
     let price_scale = 10u128.checked_pow(exp_abs).ok_or(OracleError::Overflow)?;
-    let token_scale = 10u128.checked_pow(token_decimals as u32).ok_or(OracleError::Overflow)?;
+    let token_scale = 10u128
+        .checked_pow(token_decimals as u32)
+        .ok_or(OracleError::Overflow)?;
 
     // token_amount = fiat_amount * price * token_scale / price_scale
     let result = (fiat_amount as u128)
@@ -125,7 +127,9 @@ pub fn calculate_redeem_amount(
 
     let exp_abs = feed.exponent.unsigned_abs();
     let price_scale = 10u128.checked_pow(exp_abs).ok_or(OracleError::Overflow)?;
-    let token_scale = 10u128.checked_pow(token_decimals as u32).ok_or(OracleError::Overflow)?;
+    let token_scale = 10u128
+        .checked_pow(token_decimals as u32)
+        .ok_or(OracleError::Overflow)?;
 
     let result = (token_amount as u128)
         .checked_mul(price_scale)
@@ -232,7 +236,7 @@ mod tests {
     #[test]
     fn mint_usd_1to1() {
         let feed = usd_feed(); // price = 1.0
-        // 1,000,000 fiat units -> should get 1,000,000 tokens (6 decimals)
+                               // 1,000,000 fiat units -> should get 1,000,000 tokens (6 decimals)
         let result = calculate_mint_amount(1_000_000, &feed, 6).unwrap();
         assert_eq!(result, 1_000_000_000_000);
     }
@@ -240,7 +244,7 @@ mod tests {
     #[test]
     fn mint_brl_conversion() {
         let feed = brl_feed(); // 1 BRL = 0.20 USD
-        // 1 BRL -> 0.20 USD -> 200_000 token units (6 decimals)
+                               // 1 BRL -> 0.20 USD -> 200_000 token units (6 decimals)
         let result = calculate_mint_amount(1, &feed, 6).unwrap();
         assert_eq!(result, 200_000);
     }

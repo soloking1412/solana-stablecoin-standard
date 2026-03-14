@@ -1,5 +1,5 @@
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use crate::app::App;
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 pub fn handle_key_event(app: &mut App, key: KeyEvent) {
     match key.code {

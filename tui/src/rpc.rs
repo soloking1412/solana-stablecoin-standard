@@ -3,7 +3,7 @@ use solana_client::rpc_client::RpcClient;
 use solana_sdk::pubkey::Pubkey;
 use std::str::FromStr;
 
-use crate::app::{TokenInfo, HolderInfo, EventEntry};
+use crate::app::{EventEntry, HolderInfo, TokenInfo};
 
 pub fn fetch_config(client: &RpcClient, mint: &str) -> Result<TokenInfo> {
     // Derive the config PDA
@@ -51,12 +51,20 @@ pub fn fetch_recent_events(client: &RpcClient, program_id: &str) -> Result<Vec<E
         .iter()
         .take(50)
         .map(|sig| EventEntry {
-            event_type: if sig.err.is_some() { "Failed".into() } else { "Transaction".into() },
+            event_type: if sig.err.is_some() {
+                "Failed".into()
+            } else {
+                "Transaction".into()
+            },
             actor: sig.signature[..8].to_string(),
             details: sig.memo.clone().unwrap_or_default(),
-            timestamp: sig.block_time
-                .map(|t| chrono::DateTime::from_timestamp(t, 0)
-                    .map_or("unknown".into(), |dt| dt.format("%Y-%m-%d %H:%M:%S").to_string()))
+            timestamp: sig
+                .block_time
+                .map(|t| {
+                    chrono::DateTime::from_timestamp(t, 0).map_or("unknown".into(), |dt| {
+                        dt.format("%Y-%m-%d %H:%M:%S").to_string()
+                    })
+                })
                 .unwrap_or_else(|| "unknown".into()),
         })
         .collect();

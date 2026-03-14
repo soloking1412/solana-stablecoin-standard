@@ -1,6 +1,6 @@
+use crate::app::App;
 use ratatui::prelude::*;
 use ratatui::widgets::*;
-use crate::app::App;
 
 pub fn render(frame: &mut Frame, app: &App, area: Rect) {
     let chunks = Layout::default()
@@ -13,9 +13,13 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
             Line::from(""),
             Line::from(format!("  Total Minted:        {}", info.total_minted)),
             Line::from(format!("  Total Burned:        {}", info.total_burned)),
-            Line::from(format!("  Circulating Supply:  {}", app.circulating_supply())),
+            Line::from(format!(
+                "  Circulating Supply:  {}",
+                app.circulating_supply()
+            )),
             Line::from(""),
-            Line::from(format!("  Burn Rate:           {:.2}%",
+            Line::from(format!(
+                "  Burn Rate:           {:.2}%",
                 if info.total_minted > 0 {
                     (info.total_burned as f64 / info.total_minted as f64) * 100.0
                 } else {
@@ -27,8 +31,11 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
         vec![Line::from("  Loading...")]
     };
 
-    let supply_block = Paragraph::new(supply_text)
-        .block(Block::default().borders(Borders::ALL).title(" Supply Details "));
+    let supply_block = Paragraph::new(supply_text).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title(" Supply Details "),
+    );
     frame.render_widget(supply_block, chunks[0]);
 
     // Supply sparkline (mock data for visualization)
@@ -37,7 +44,11 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
         .collect();
 
     let sparkline = Sparkline::default()
-        .block(Block::default().borders(Borders::ALL).title(" Supply History "))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title(" Supply History "),
+        )
         .data(&data)
         .style(Style::default().fg(Color::Green));
     frame.render_widget(sparkline, chunks[1]);

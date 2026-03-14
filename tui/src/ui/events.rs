@@ -1,6 +1,6 @@
+use crate::app::App;
 use ratatui::prelude::*;
 use ratatui::widgets::*;
-use crate::app::App;
 
 pub fn render(frame: &mut Frame, app: &App, area: Rect) {
     let items: Vec<ListItem> = app
@@ -23,21 +23,17 @@ pub fn render(frame: &mut Frame, app: &App, area: Rect) {
                     format!("[{}] ", e.timestamp),
                     Style::default().fg(Color::DarkGray),
                 ),
-                Span::styled(
-                    format!("{:<12} ", e.event_type),
-                    style,
-                ),
+                Span::styled(format!("{:<12} ", e.event_type), style),
                 Span::raw(format!("{} {}", e.actor, e.details)),
             ]))
         })
         .collect();
 
-    let list = List::new(items)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(format!(" Events ({}) ", app.recent_events.len())),
-        );
+    let list = List::new(items).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title(format!(" Events ({}) ", app.recent_events.len())),
+    );
 
     frame.render_widget(list, area);
 }

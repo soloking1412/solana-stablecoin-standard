@@ -1,9 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
-    Mint, TokenAccount, TokenInterface,
-    transfer_checked, TransferChecked,
-    thaw_account as spl_thaw, ThawAccount,
-    freeze_account as spl_freeze, FreezeAccount,
+    freeze_account as spl_freeze, thaw_account as spl_thaw, transfer_checked, FreezeAccount, Mint,
+    ThawAccount, TokenAccount, TokenInterface, TransferChecked,
 };
 
 use crate::constants::*;
@@ -67,17 +65,15 @@ pub fn handler(ctx: Context<Seize>) -> Result<()> {
 
     // Step 1: Thaw the frozen account so we can transfer tokens out.
     // Token-2022 blocks transfers from frozen accounts, even with permanent delegate.
-    spl_thaw(
-        CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
-            ThawAccount {
-                account: ctx.accounts.from_account.to_account_info(),
-                mint: ctx.accounts.mint.to_account_info(),
-                authority: ctx.accounts.config.to_account_info(),
-            },
-            signer_seeds,
-        ),
-    )?;
+    spl_thaw(CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        ThawAccount {
+            account: ctx.accounts.from_account.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+            authority: ctx.accounts.config.to_account_info(),
+        },
+        signer_seeds,
+    ))?;
 
     // Step 2: Use permanent delegate authority (the config PDA) to transfer
     transfer_checked(
@@ -97,17 +93,15 @@ pub fn handler(ctx: Context<Seize>) -> Result<()> {
 
     // Step 3: Re-freeze the account to maintain compliance state.
     // The account was frozen for a reason; seizure empties it but keeps it locked.
-    spl_freeze(
-        CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
-            FreezeAccount {
-                account: ctx.accounts.from_account.to_account_info(),
-                mint: ctx.accounts.mint.to_account_info(),
-                authority: ctx.accounts.config.to_account_info(),
-            },
-            signer_seeds,
-        ),
-    )?;
+    spl_freeze(CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        FreezeAccount {
+            account: ctx.accounts.from_account.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+            authority: ctx.accounts.config.to_account_info(),
+        },
+        signer_seeds,
+    ))?;
 
     let clock = Clock::get()?;
     emit!(TokensSeized {

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 /// Trident fuzz test harness for SSS programs
 ///
 /// Comprehensive property-based testing for invariants under randomized inputs.
@@ -20,7 +22,6 @@
 ///   trident fuzz run-hfuzz fuzz_0
 ///
 /// Requires trident-cli: cargo install trident-cli
-
 use anchor_lang::prelude::*;
 
 // =============================================================================
@@ -92,16 +93,18 @@ fn fuzz_quota_over_boundary(quota: u64) -> bool {
 
 /// Multi-minter quota independence: each minter tracks separately
 fn fuzz_multi_minter_independence(
-    quota1: u64, minted1: u64,
-    quota2: u64, minted2: u64,
+    quota1: u64,
+    minted1: u64,
+    quota2: u64,
+    minted2: u64,
     new_mint: u64,
 ) -> bool {
     // Minter 1's quota check is independent of minter 2's state
     let check1 = fuzz_quota_invariant(quota1, minted1, new_mint);
     let check2 = fuzz_quota_invariant(quota2, minted2, new_mint);
     // They should only depend on their own quota/minted
-    let expected1 = minted1.checked_add(new_mint).map_or(false, |t| t <= quota1);
-    let expected2 = minted2.checked_add(new_mint).map_or(false, |t| t <= quota2);
+    let expected1 = minted1.checked_add(new_mint).is_some_and(|t| t <= quota1);
+    let expected2 = minted2.checked_add(new_mint).is_some_and(|t| t <= quota2);
     check1 == expected1 && check2 == expected2
 }
 
@@ -183,8 +186,8 @@ fn fuzz_pause_operation_gating(paused: bool, operation: u8) -> bool {
     // 0=mint, 1=burn, 2=freeze, 3=thaw, 4=grant_role, 5=revoke_role
     if paused {
         match operation {
-            0 | 1 => false,  // mint/burn blocked
-            _ => true,       // everything else works
+            0 | 1 => false, // mint/burn blocked
+            _ => true,      // everything else works
         }
     } else {
         true // nothing blocked when unpaused
@@ -247,19 +250,12 @@ fn fuzz_blacklist_pda_deterministic(
 }
 
 /// Config PDA determinism: same mint produces same config PDA
-fn fuzz_config_pda_deterministic(
-    mint_bytes: &[u8; 32],
-    program_id_bytes: &[u8; 32],
-) -> bool {
+fn fuzz_config_pda_deterministic(mint_bytes: &[u8; 32], program_id_bytes: &[u8; 32]) -> bool {
     let program_id = Pubkey::new_from_array(*program_id_bytes);
-    let (pda1, bump1) = Pubkey::find_program_address(
-        &[b"stablecoin", mint_bytes.as_ref()],
-        &program_id,
-    );
-    let (pda2, bump2) = Pubkey::find_program_address(
-        &[b"stablecoin", mint_bytes.as_ref()],
-        &program_id,
-    );
+    let (pda1, bump1) =
+        Pubkey::find_program_address(&[b"stablecoin", mint_bytes.as_ref()], &program_id);
+    let (pda2, bump2) =
+        Pubkey::find_program_address(&[b"stablecoin", mint_bytes.as_ref()], &program_id);
     pda1 == pda2 && bump1 == bump2
 }
 
@@ -333,7 +329,7 @@ fn fuzz_quota_pda_deterministic(
 
 /// Preset validation: only 1, 2, 3 are valid
 fn fuzz_preset_validation(preset: u8) -> bool {
-    matches!(preset, 1 | 2 | 3)
+    matches!(preset, 1..=3)
 }
 
 /// Name length validation: max 32 characters
@@ -472,9 +468,7 @@ mod tests {
     #[test]
     fn test_multi_minter_independence() {
         assert!(fuzz_multi_minter_independence(
-            1_000_000, 500_000,
-            2_000_000, 100_000,
-            400_000
+            1_000_000, 500_000, 2_000_000, 100_000, 400_000
         ));
     }
 
@@ -527,8 +521,8 @@ mod tests {
     fn test_compliance_role_gating_sss1() {
         assert!(!fuzz_compliance_role_gating(1, 5)); // blacklister on SSS-1 = reject
         assert!(!fuzz_compliance_role_gating(1, 6)); // seizer on SSS-1 = reject
-        assert!(fuzz_compliance_role_gating(1, 0));  // admin on SSS-1 = ok
-        assert!(fuzz_compliance_role_gating(1, 1));  // minter on SSS-1 = ok
+        assert!(fuzz_compliance_role_gating(1, 0)); // admin on SSS-1 = ok
+        assert!(fuzz_compliance_role_gating(1, 1)); // minter on SSS-1 = ok
     }
 
     #[test]
@@ -553,10 +547,10 @@ mod tests {
 
     #[test]
     fn test_last_admin_protection() {
-        assert!(!fuzz_last_admin_protection(1, true));  // only admin, try to remove = blocked
-        assert!(fuzz_last_admin_protection(2, true));   // 2 admins, can remove one
-        assert!(fuzz_last_admin_protection(1, false));  // only admin, not removing = ok
-        assert!(fuzz_last_admin_protection(0, false));  // no admins (shouldn't happen), not removing = ok
+        assert!(!fuzz_last_admin_protection(1, true)); // only admin, try to remove = blocked
+        assert!(fuzz_last_admin_protection(2, true)); // 2 admins, can remove one
+        assert!(fuzz_last_admin_protection(1, false)); // only admin, not removing = ok
+        assert!(fuzz_last_admin_protection(0, false)); // no admins (shouldn't happen), not removing = ok
     }
 
     // --- Pause Tests ---
@@ -571,15 +565,15 @@ mod tests {
 
     #[test]
     fn test_double_pause_rejected() {
-        assert!(!fuzz_double_pause_rejected(true, true));   // already paused + pause = reject
-        assert!(fuzz_double_pause_rejected(false, true));   // not paused + pause = ok
-        assert!(fuzz_double_pause_rejected(true, false));   // paused + other = ok
+        assert!(!fuzz_double_pause_rejected(true, true)); // already paused + pause = reject
+        assert!(fuzz_double_pause_rejected(false, true)); // not paused + pause = ok
+        assert!(fuzz_double_pause_rejected(true, false)); // paused + other = ok
     }
 
     #[test]
     fn test_double_unpause_rejected() {
         assert!(!fuzz_double_unpause_rejected(false, true)); // not paused + unpause = reject
-        assert!(fuzz_double_unpause_rejected(true, true));   // paused + unpause = ok
+        assert!(fuzz_double_unpause_rejected(true, true)); // paused + unpause = ok
     }
 
     #[test]
@@ -587,10 +581,10 @@ mod tests {
         // When paused: mint(0) and burn(1) blocked, others ok
         assert!(!fuzz_pause_operation_gating(true, 0)); // mint blocked
         assert!(!fuzz_pause_operation_gating(true, 1)); // burn blocked
-        assert!(fuzz_pause_operation_gating(true, 2));  // freeze ok
-        assert!(fuzz_pause_operation_gating(true, 3));  // thaw ok
-        assert!(fuzz_pause_operation_gating(true, 4));  // grant_role ok
-        assert!(fuzz_pause_operation_gating(true, 5));  // revoke_role ok
+        assert!(fuzz_pause_operation_gating(true, 2)); // freeze ok
+        assert!(fuzz_pause_operation_gating(true, 3)); // thaw ok
+        assert!(fuzz_pause_operation_gating(true, 4)); // grant_role ok
+        assert!(fuzz_pause_operation_gating(true, 5)); // revoke_role ok
 
         // When unpaused: everything ok
         for op in 0..=5 {
@@ -682,22 +676,13 @@ mod tests {
         let bytes = [1u8; 32];
         let prog = Pubkey::new_from_array(bytes);
 
-        let (config_pda, _) = Pubkey::find_program_address(
-            &[b"stablecoin", bytes.as_ref()],
-            &prog,
-        );
-        let (role_pda, _) = Pubkey::find_program_address(
-            &[b"role", bytes.as_ref(), &[0], bytes.as_ref()],
-            &prog,
-        );
-        let (minter_pda, _) = Pubkey::find_program_address(
-            &[b"minter", bytes.as_ref(), bytes.as_ref()],
-            &prog,
-        );
-        let (blacklist_pda, _) = Pubkey::find_program_address(
-            &[b"blacklist", bytes.as_ref(), bytes.as_ref()],
-            &prog,
-        );
+        let (config_pda, _) = Pubkey::find_program_address(&[b"stablecoin", bytes.as_ref()], &prog);
+        let (role_pda, _) =
+            Pubkey::find_program_address(&[b"role", bytes.as_ref(), &[0], bytes.as_ref()], &prog);
+        let (minter_pda, _) =
+            Pubkey::find_program_address(&[b"minter", bytes.as_ref(), bytes.as_ref()], &prog);
+        let (blacklist_pda, _) =
+            Pubkey::find_program_address(&[b"blacklist", bytes.as_ref(), bytes.as_ref()], &prog);
 
         // All PDAs must be unique
         assert_ne!(config_pda, role_pda);
@@ -755,10 +740,10 @@ mod tests {
 
     #[test]
     fn test_seizure_requires_frozen() {
-        assert!(fuzz_seizure_requires_frozen(true, 2));   // frozen + SSS-2 = ok
-        assert!(!fuzz_seizure_requires_frozen(false, 2));  // not frozen = reject
-        assert!(!fuzz_seizure_requires_frozen(true, 1));   // SSS-1 = reject
-        assert!(!fuzz_seizure_requires_frozen(false, 1));  // SSS-1 + not frozen = reject
+        assert!(fuzz_seizure_requires_frozen(true, 2)); // frozen + SSS-2 = ok
+        assert!(!fuzz_seizure_requires_frozen(false, 2)); // not frozen = reject
+        assert!(!fuzz_seizure_requires_frozen(true, 1)); // SSS-1 = reject
+        assert!(!fuzz_seizure_requires_frozen(false, 1)); // SSS-1 + not frozen = reject
     }
 
     #[test]

@@ -1,19 +1,19 @@
-pub mod dashboard;
-pub mod supply;
-pub mod holders;
-pub mod events;
 pub mod compliance;
+pub mod dashboard;
+pub mod events;
+pub mod holders;
+pub mod supply;
 
+use crate::app::{App, Tab};
 use ratatui::prelude::*;
 use ratatui::widgets::*;
-use crate::app::{App, Tab};
 
 pub fn render(frame: &mut Frame, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(3), // tabs
-            Constraint::Min(0),   // content
+            Constraint::Min(0),    // content
             Constraint::Length(1), // status bar
         ])
         .split(frame.area());
@@ -36,7 +36,9 @@ fn render_tabs(frame: &mut Frame, app: &App, area: Rect) {
         .iter()
         .map(|t| {
             let style = if *t == app.current_tab {
-                Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD)
             } else {
                 Style::default().fg(Color::Gray)
             };
@@ -45,7 +47,11 @@ fn render_tabs(frame: &mut Frame, app: &App, area: Rect) {
         .collect();
 
     let tabs = Tabs::new(titles)
-        .block(Block::default().borders(Borders::ALL).title(" SSS Token Manager "))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title(" SSS Token Manager "),
+        )
         .highlight_style(Style::default().fg(Color::Yellow))
         .divider(" | ");
 

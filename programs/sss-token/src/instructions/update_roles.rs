@@ -105,9 +105,7 @@ pub fn handler_revoke(ctx: Context<RevokeRole>, role_type: u8) -> Result<()> {
     let _role = RoleType::from_u8(role_type).ok_or(StablecoinError::InvalidRole)?;
 
     // Prevent removing yourself as admin if you're the last one
-    if role_type == RoleType::Admin as u8
-        && ctx.accounts.user.key() == ctx.accounts.admin.key()
-    {
+    if role_type == RoleType::Admin as u8 && ctx.accounts.user.key() == ctx.accounts.admin.key() {
         return Err(StablecoinError::LastAdmin.into());
     }
 
