@@ -27,11 +27,14 @@ pub struct Execute<'info> {
     /// CHECK: stablecoin config PDA — extra meta [0]
     pub stablecoin_config: UncheckedAccount<'info>,
 
-    /// CHECK: source blacklist PDA — extra meta [1].
+    /// CHECK: sss-token program — extra meta [1], used for PDA derivation
+    pub stablecoin_program: UncheckedAccount<'info>,
+
+    /// CHECK: source blacklist PDA — extra meta [2].
     /// If the account exists and has data, source is blacklisted.
     pub source_blacklist: UncheckedAccount<'info>,
 
-    /// CHECK: destination blacklist PDA — extra meta [2].
+    /// CHECK: destination blacklist PDA — extra meta [3].
     /// If the account exists and has data, destination is blacklisted.
     pub destination_blacklist: UncheckedAccount<'info>,
 }

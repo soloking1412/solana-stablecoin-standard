@@ -33,33 +33,58 @@ pub struct InitializeExtraAccountMetas<'info> {
 }
 
 pub fn handler(ctx: Context<InitializeExtraAccountMetas>) -> Result<()> {
+    // Token-2022 transfer hook fixed account layout:
+    //   0: source token account
+    //   1: mint
+    //   2: destination token account
+    //   3: owner/delegate (source authority)
+    //   4: extra_account_metas PDA (validation account)
+    //
+    // Extra metas (appended after fixed accounts):
+    //   5: [0] stablecoin_config  (static pubkey)
+    //   6: [1] sss_token program  (static pubkey, needed for PDA derivation)
+    //   7: [2] source_blacklist   (resolved PDA under sss_token)
+    //   8: [3] dest_blacklist     (resolved PDA under sss_token)
+
     let extra_metas = vec![
-        // [0] stablecoin config PDA — passed as-is to the execute hook
+        // [0] stablecoin config PDA (index 5 in full list)
         ExtraAccountMeta::new_with_pubkey(&ctx.accounts.stablecoin_config.key(), false, false)?,
-        // [1] source blacklist PDA — derived from [BLACKLIST_SEED, config, source_owner]
-        // We use external PDA resolution:  the source owner is at index 2 in the
-        // transfer instruction accounts (owner of source token account).
+        // [1] sss-token program (index 6 in full list) — needed as program_id for PDA derivation
+        ExtraAccountMeta::new_with_pubkey(&ctx.accounts.stablecoin_program.key(), false, false)?,
+        // [2] source blacklist PDA: seeds = [BLACKLIST_SEED, config, source_owner]
+        //     program_index 6 = sss_token program
+        //     config = index 5 (extra_meta[0])
+        //     source owner = bytes 32..64 of source token account (index 0)
         ExtraAccountMeta::new_external_pda_with_seeds(
-            0, // stablecoin_program index in extra metas... we'll use literal pubkey
+            6,
             &[
                 Seed::Literal {
                     bytes: BLACKLIST_SEED.to_vec(),
                 },
-                Seed::AccountKey { index: 0 }, // stablecoin_config (extra meta 0)
-                Seed::AccountKey { index: 3 }, // source token account owner
+                Seed::AccountKey { index: 5 },
+                Seed::AccountData {
+                    account_index: 0,
+                    data_index: 32,
+                    length: 32,
+                },
             ],
             false,
             false,
         )?,
-        // [2] destination blacklist PDA — derived from [BLACKLIST_SEED, config, dest_owner]
+        // [3] destination blacklist PDA: seeds = [BLACKLIST_SEED, config, dest_owner]
+        //     dest owner = bytes 32..64 of destination token account (index 2)
         ExtraAccountMeta::new_external_pda_with_seeds(
-            0,
+            6,
             &[
                 Seed::Literal {
                     bytes: BLACKLIST_SEED.to_vec(),
                 },
-                Seed::AccountKey { index: 0 }, // stablecoin_config
-                Seed::AccountKey { index: 4 }, // destination token account owner
+                Seed::AccountKey { index: 5 },
+                Seed::AccountData {
+                    account_index: 2,
+                    data_index: 32,
+                    length: 32,
+                },
             ],
             false,
             false,
